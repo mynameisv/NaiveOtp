@@ -133,8 +133,10 @@
 #############################
 import base64
 import binascii
+import codecs
 import hashlib
 import hmac
+import math
 import time
 #
 ##
@@ -177,6 +179,8 @@ class ObjNaiveOtp:
 		if type(sKey) is str:
 			self.sKey = sKey.strip()
 			return True
+		elif type(sKey) == bytes:
+			self.sKey = ''.join(map(chr,sKey))
 		else:
 			return False
 	# end - setKey
@@ -336,9 +340,9 @@ class ObjNaiveOtp:
 		self.setTimeCurrent(1234567890)
 		self.doTimeRangeFloor()
 		if self.genOtp() == '810312':
-			print ' [*] Greatings, it works \o/'
+			print(' [*] Greatings, it works \o/')
 		else:
-			print ' [!] There is a problem with the OTP calculation, sorry...'
+			print(' [!] There is a problem with the OTP calculation, sorry...')
 	# end - doesItWorks
 	#############################
 	# [ What ]
@@ -352,7 +356,7 @@ class ObjNaiveOtp:
 		while i>0:
 			sHex = '%X' % (i%16)
 			sRet = sHex+sRet
-			i=i/16
+			i=math.floor(i/16)
 		return sRet
 	# end - i2h
 	#############################
@@ -362,10 +366,11 @@ class ObjNaiveOtp:
 	# Truncated value of an OTP, as a String
 	#############################
 	def truncValue(self,
-		sOtp,	# OTP value, as a String
+		sOtp,	# OTP value, as a String of bytes
 		iLen # length of the result, as an Integer
 	):
 		lBytes = map(ord, sOtp)
+		lBytes = list(sOtp)
 		iOffset = lBytes[-1] & 0xf
 		iRes = (lBytes[iOffset] & 0x7f) << 24 | (lBytes[iOffset+1] & 0xff) << 16 | (lBytes[iOffset+2] & 0xff) << 8 | (lBytes[iOffset+3] & 0xff)
 		sRes = str(iRes)
@@ -408,23 +413,23 @@ class ObjNaiveOtp:
 	def genOtp(self):
 		# Get Seed and short it, depending on the algo
 		sKeyLocal = self.shortSeed(self.sKey,self.sAlgo)
-		
 		# Seed (hex string) to binary data
 		binSeed = binascii.unhexlify(sKeyLocal)
 		
 		# Initialise iRange with iTimeRangeFloor
 		iRange = self.iTimeRangeFloor
-
+		
 		# range floor (int) to hex string
 		sHexRange = self.i2h(iRange)
 		
 		# Must be a 16bytes long hex string = 64bits int value = 8 bytes : 0x00 (len=2) => 1 byte, 0x0000 (len=4) => 2 bytes...
 		while len(sHexRange)<16:
 			sHexRange = '0'+sHexRange
-			
+		
 		# range floor (hex string) to binary data
 		binRange = binascii.unhexlify(sHexRange)
-			
+		
+
 		# do the HMAC / OTP calculation
 		# if/else because: Never use unchecked external string ;-)
 		if self.sAlgo == 'sha1':

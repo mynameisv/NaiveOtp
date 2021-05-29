@@ -24,9 +24,10 @@
 ###########################################################
 # Python Imports
 #############################
-from naiveotp import ObjNaiveOtp
+from naiveotp3 import ObjNaiveOtp
 import base64
 import sys
+import time
 #
 ##
 ###
@@ -34,15 +35,15 @@ import sys
 # Functions
 #############################
 def printHelp():
-	print ''
-	print 'Facebook OTP Generator v0.1'
-	print ''
-	print 'Dirty command line with the secret in clear as a parameter O_o\''
-	print '  # python fbotp.py <base32 encoded secret key>'
-	print ''
-	print 'Example:'
-	print '  # python fbotp.py ABCDEFGHIJKLMNOP'
-	print ''
+	print('')
+	print('Facebook OTP Generator v0.1')
+	print('')
+	print('Dirty command line with the secret in clear as a parameter O_o')
+	print('  # python fbotp.py <base32 encoded secret key>')
+	print('')
+	print('Example:')
+	print('  # python fbotp.py ABCDEFGHIJKLMNOP')
+	print('')
 	sys.exit()
 #end - printHelp
 #
@@ -61,7 +62,7 @@ def main():
 		try:
 			sKeyBin = base64.b32decode(sKeyBase32)
 		except:
-			print " [!] Argument is not Base32"
+			print(" [!] Argument is not Base32")
 			printHelp()
 		# Generate the OTP
 		oOtp = ObjNaiveOtp()
@@ -72,7 +73,12 @@ def main():
 		oOtp.setOtpValidity(30)
 		oOtp.doTimeCurrent()
 		oOtp.doTimeRangeFloor()
-		print str(oOtp.genOtp())
+		print(str(oOtp.genOtp()))
+		print('Sleep 10')
+		time.sleep(10)
 #end - main
+
 if __name__ == '__main__':
+	main()
+else:
 	main()

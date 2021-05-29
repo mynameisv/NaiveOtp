@@ -23,106 +23,80 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
 NaiveOTP
 --------
-This lib is an extract of a closed-private dev i've made for a internal OTP solution. The purpose here is simple: an easy to use library :-D
+NaiveOTP is a simple OTP class to generate OTP for Python >=3.7 from :
+* HOTP / HMAC-Based OTP Algorithm (RFC 4226)
+* TOTP / Time-based One-time Password Algorithm (RFC 6238)
 
+Functionalities :
+* Support key/seed in different forms : base32 encoded with incorrect padding auto-patching, bytes, hex
+* Can export key/seed as qrcode file or url base64
+* Support a grace number of previous and futur OTP, if time if shifted/drifted
 
-Algorithms
-----------------
 This library supports :
 * SHA1-160 bits, aka sha1
 * SHA2-256 bits, aka sha256
 * SHA2-384 bits, aka sha384
 * SHA2-512 bits, aka sha512
 
+By default use : SHA1 + 6-number OTP lenght + 30s. OTP validity
+
 
 Shift and Drift
 ----------------
+ ! no more supported -> replaced by grace number
 Shift time, is a shifted time on the client side. Drift time, is a shifted time on the server side. It's common to have time shifts between server and client on OTP, HardToken and SoftToken solution. This two options allow to correct the shifts on both sides. It's not really usefull if the library is used as a standalone one ;-).
 
 
-Previous and Next
+Grace
 ----------------
 Previous OTP are the n-1, n-2... OTP. Next OTP are the n+1, n+2... OTP. As "Shift and Drift", this feature is mostly used on full OTP solution with client and server. It allows, if needed, to support previous and/or next OTP.
 
 
 Usage
 ----------------
-Does it works:
+
+test me
 ````
-from naiveotp import ObjNaiveOtp
-oOtp = ObjNaiveOtp()
-oOtp.doesItWorks()
+from naiveotp4 import naiveOtp
+o=naiveOtp()
+o.test()
 ````
 
-Simple usage with a Facebook key:
+generate 1 OTP
 ````
-from naiveotp import ObjNaiveOtp
-sKeyB32 = 'ABCD EFGH IJKL MNOP'
-oOtp = ObjNaiveOtp()
-sKeyHex = oOtp.convertFacebookKeyToHex(sKeyB32)
-oOtp.setKey(sKeyHex)
-oOtp.setAlgo('sha1')
-oOtp.setOtpLen(6)
-oOtp.setOtpValidity(30)
-oOtp.doTimeCurrent()
-oOtp.doTimeRangeFloor()
-print str(oOtp.genOtp())
+from naiveotp4 import naiveOtp
+o = naiveOtp(hash_name='sha1', otp_len=6, otp_validity=30, seed='RLID574DSBFLYQT7QS6HHRQ5UMR3XRSPGMEAICJQSVOSMDSJLMOQ')
+print(o.otp())
 ````
 
-Usage to get multiple OTP, 2 previous and 4 nexts:
+generate 1 OTP with multiple call for parameters
 ````
-from naiveotp import ObjNaiveOtp
-sKeyB32 = 'ABCD EFGH IJKL MNOP'
-oOtp = ObjNaiveOtp()
-sKeyHex = oOtp.convertFacebookKeyToHex(sKeyB32)
-oOtp.setKey(sKeyHex)
-oOtp.setAlgo('sha1')
-oOtp.setOtpLen(6)
-oOtp.setOtpValidity(30)
-oOtp.doTimeCurrent()
-oOtp.doTimeRangeFloor()
-for dOtp in oOtp.genOtpPrevNext(2,4):
-	print dOtp['otp']
+from naiveotp4 import naiveOtp
+o = naiveOtp(hash_name='sha1')
+o = naiveOtp(otp_len=6)
+o = naiveOtp(otp_validity=30)
+o.set_seed('RLID574DSBFLYQT7QS6HHRQ5UMR3XRSPGMEAICJQSVOSMDSJLMOQ')
+print(o.gen_otp())
 ````
 
-Usage with a Drift:
+generate key/seed and export to qrcode image file
 ````
-from naiveotp import ObjNaiveOtp
-sKeyB32 = 'ABCD EFGH IJKL MNOP'
-oOtp = ObjNaiveOtp()
-sKeyHex = oOtp.convertFacebookKeyToHex(sKeyB32)
-oOtp.setKey(sKeyHex)
-oOtp.setAlgo('sha1')
-oOtp.setOtpLen(6)
-oOtp.setOtpValidity(30)
-oOtp.setDrift(123) #Yes, it's a big shift ;-)
-oOtp.doDrift()
-oOtp.doTimeCurrent()
-oOtp.doTimeRangeFloor()
-print str(oOtp.genOtp())
+from naiveotp4 import naiveOtp
+o = naiveOtp()
+o.set_seed('RLID574DSBFLYQT7QS6HHRQ5UMR3XRSPGMEAICJQSVOSMDSJLMOQ')
+o.qrcode_from_seed()
+````
+
+generate key/seed and export to qrcode base64 url encoded (recommanded for security)
+````
+from naiveotp4 import naiveOtp
+o = naiveOtp()
+sb = o.gen_seed()
+o.set_seed(sb)
+o.qrcode_from_seed(export_to_b64=True)
 ````
 
 
-fbotp.py ?
-----------------
-A command line tool for Facebook OTP generation, based on lib NaiveOTP
-Usage with a Drift:
-````
-python fbotp.py <base32 encoded secret key>
-````
-
-
-A word about Python ?
-----------------
-I like and hate Python. It very powerfull, easy to use but :
-* That fracking indentation... Copy/paste a code from an email or a web page and it explode. C-style braces, I miss you :'(
-* Space vs Tab, it's endless even after that https://medium.com/@hoffa/400-000-github-repositories-1-billion-files-14-terabytes-of-code-spaces-or-tabs-7cfe0b5dd7fd#.8ahftovun 
-* Multithreading is not real multithreading on multi-core
-* Variable scope in classes with multithreading is a mess (threadsafe)
-
-
-Last word ?
-----------------
 
 ````
          ///\\\  ( Have Fun )
@@ -131,6 +105,6 @@ Last word ?
      / _ `----' _ \
      \__\   _   |__\
       (..) _| _ (..)
-       |____(___|     Mynameisv_ 2016
+       |____(___|     Mynameisv_ 2021
 _ __ _ (____)____) _ _________________________________ _'
 ````
